@@ -1,0 +1,16 @@
+## YAML Template.
+---
+transporters:
+  - {catcher: 1,dropper: 3}
+  - {catcher: 2,dropper: 4}
+  - {catcher: 7,dropper: 5}
+  - {catcher: 8,dropper: 6}
+dots: |
+  py----gy
+  rp----py
+  gp----py
+  ggprgrgr
+  pygrbprr
+  --grpr--
+  --grby--
+  --bbby--

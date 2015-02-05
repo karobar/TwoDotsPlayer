@@ -6,11 +6,16 @@ public enum DotFlavor {
     PURPLE('p',true), 
     YELLOW('y',true), 
     GREEN('g',true), 
-    BLOCK('k',true),
     
+    WHITE('w',true),
+    CYCLE('*',false),
+    
+    ANCHOR('a',false),
+    BLOCK('k',false),
     FIRE('f',false),
     BLANK('-',false),
-    EMPTY('e',false);
+    EMPTY('_',false),
+    UNKNOWN_OR_ERROR('?',false);
     
     char dotChar;
     boolean isColor;
@@ -41,9 +46,18 @@ public enum DotFlavor {
         else if(dotChar == 'g') {
             return GREEN;
         }
+        else if(dotChar == 'w') {
+            return WHITE;
+        }
+        else if(dotChar == 'a') {
+            return ANCHOR;
+        }
         else if(dotChar == '-') {
             return BLANK;
         }
-        return EMPTY;
+        else if(dotChar == '_') {
+            return EMPTY;
+        }
+        return UNKNOWN_OR_ERROR;
     }
 }

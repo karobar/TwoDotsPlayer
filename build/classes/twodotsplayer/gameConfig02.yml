@@ -1,9 +1,9 @@
 ## YAML Template.
 ---
 transporters: ~
-dots:
-  rrr--rrr
-  r-rrrr-r
-  rrrrrrrr
-  -rr--rr-
-  -rrrrrr-
+dots: |
+  a___
+  baba
+  ybba
+  raaa
+  pbba

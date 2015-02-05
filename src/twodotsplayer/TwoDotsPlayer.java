@@ -11,7 +11,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 public class TwoDotsPlayer {
     static final int MAX_LEVEL = 2;
     
-    static void DFS(GameConfiguration startGameConfig) {
+    static void BFS(GameConfiguration startGameConfig) {
         HashSet<GameConfiguration> unexploredConfigs = new HashSet<>();
         unexploredConfigs.add(startGameConfig);
         int level = 0;
@@ -72,7 +72,7 @@ public class TwoDotsPlayer {
         startGameConfig.drop();
         //System.out.println("Initial drop complete: \n" + startGameConfig);
         
-        DFS(startGameConfig);
+        BFS(startGameConfig);
         
         //Dot testDot = testGameConfig.getDot(0,0);
         //HashSet<Move> singleDotMoveSet = testGameConfig.findAllMovesForDot(testDot, null, new HashSet<Dot>());

@@ -80,8 +80,20 @@ public class GameConfiguration {
                 retStr = retStr + dotMap.get(curY).get(curX).dotFlavor.toChar();
             }
             retStr = retStr + "\n";
-        }
+        }        
+        return retStr;
+    }
+    
+    public String toString(int tabs) {
+        String retStr = "";
         
+        for(int curY=0;curY<dotMap.size();curY++) {
+            retStr = retStr + TwoDotsPlayer.tabs(tabs);
+            for (int curX=0;curX<dotMap.get(0).size();curX++) {
+                retStr = retStr + dotMap.get(curY).get(curX).dotFlavor.toChar();
+            }
+            retStr = retStr + "\n";
+        }        
         return retStr;
     }
     
@@ -155,8 +167,8 @@ public class GameConfiguration {
         return dotMap.size();
     }
     
-    public void findAllMovesForAllDots() {        
-        allMoves = new HashSet<>();
+    public HashSet<Move> findAllMovesForAllDots() {        
+        HashSet<Move> allMoves = new HashSet<>();
         for(int currRow = 0; currRow < getNumRows(); currRow++) {
             for(int currCol = 0; currCol < getNumCols(); currCol++) {
                 //getDot uses (x,y) notation
@@ -165,7 +177,8 @@ public class GameConfiguration {
                     allMoves.addAll( findAllMovesForDot(currDot,null, new HashSet<Dot>(),currDot.dotFlavor) );
                 }   
             }
-        } 
+        }
+        return allMoves;
     }
     
     public HashSet<Move> findAllMovesForDot(Dot center, Dot exceptionDot, HashSet<Dot> path, DotFlavor beginningFlavor) {

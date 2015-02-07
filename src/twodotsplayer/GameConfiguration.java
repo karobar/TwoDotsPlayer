@@ -11,10 +11,13 @@ public class GameConfiguration {
     HashSet<Move> allMoves;
     public int score;
     public ArrayList<Move> path;
+    public String iceOverlay;
+    public String objectives;
      
     GameConfiguration() {
         this.score = 0;
         this.path = new ArrayList<>();
+        this.dotMap = new DotMap();
     }
     
     GameConfiguration(DotMap dotMap, ArrayList<Move> path, Move newMove) {
@@ -25,6 +28,10 @@ public class GameConfiguration {
         for(Move daMove : path) {
             this.path.add(daMove);
         }
+        for(Ice ice : dotMap.iceLevels) {
+            this.dotMap.iceLevels.add(new Ice(ice.x,ice.y,ice.level));
+        } 
+        
         this.path.add(newMove);
         
         //initialize empty map      
@@ -98,52 +105,80 @@ public class GameConfiguration {
     }
     
     //returns the number of dots removed
-    public int remove(Move daMove) {
-        int removedItems = 0;
+    public void remove(Move daMove, Objective returnObjective) {
         for(Dot dot : daMove) {
-            if(dot.dotFlavor != DotFlavor.CYCLE) {
+            if(dot.dotFlavor != DotFlavor.CYCLE) {  //think this check is superfluous
+                for(Dot neighboringBlockDot : getBlockNeighbors(dot)) {
+                    Dot emptyDot = new Dot(DotFlavor.EMPTY, neighboringBlockDot.getX(), neighboringBlockDot.getY());
+                    setDot(emptyDot);
+                    returnObjective.brokenBoxes++;
+                }
                 Dot emptyDot = new Dot(DotFlavor.EMPTY, dot.getX(), dot.getY());
                 setDot(emptyDot);
-                removedItems++;
+                if (this.dotMap.breakIce(dot.getX(), dot.getY())) {
+                    returnObjective.brokenIce++;
+                }
+                returnObjective.removedDots++;
             }
         }
         if(daMove.isCycle()) {
+            returnObjective.squares++;
             for(int i=0;i<dotMap.size();i++) {
                 for(int j=0;j<dotMap.get(i).size();j++) {
                     Dot currDot = dotMap.get(i).get(j);
                     if(currDot.dotFlavor == daMove.color || daMove.allWhiteCycle()) {
+                        for(Dot neighboringBlockDot : getBlockNeighbors(currDot)) {
+                            Dot emptyDot = new Dot(DotFlavor.EMPTY, neighboringBlockDot.getX(), neighboringBlockDot.getY());
+                            setDot(emptyDot);
+                            returnObjective.brokenBoxes++;
+                        }
                         Dot emptyDot = new Dot(DotFlavor.EMPTY, currDot.getX(), currDot.getY());
                         setDot(emptyDot);
-                        removedItems++;
+                        if(this.dotMap.breakIce(currDot.getX(), currDot.getY())) {
+                            returnObjective.brokenIce++;
+                        }
+                        returnObjective.removedDots++;
                     }
                 }
             }
         }
-        return removedItems;
     }
     
     public void setDots(String dots) {
         this.dots = dots;
     }
     
-    public void parse() {
-       dotMap = new DotMap();
+    public DotMap parse() {
+       DotMap parsedDotMap = new DotMap();
        ArrayList<Dot> currRow = new ArrayList<>();
        int x = 0;
        int y = 0;       
        for(int i = 0; i < dots.length(); i++) {
             if(dots.charAt(i)=='\n') {
-                dotMap.add(currRow);
+                parsedDotMap.add(currRow);
                 currRow = new ArrayList<>();
                 y++;
                 x = 0;
             }
             else {
-                currRow.add(new Dot(DotFlavor.charToDotFlavor(dots.charAt(i)), x,y));
+                Dot newDot = new Dot(DotFlavor.charToDotFlavor(dots.charAt(i)), x,y);
+                currRow.add(newDot);
+                if(iceOverlay != null){
+                    //System.out.println("pre-try");
+                    try { 
+                        String iceStr = "" + iceOverlay.charAt(i);
+                        parsedDotMap.addIce(new Ice(x,y,Integer.parseInt(iceStr)));
+                        //System.out.println("post-try: " + parsedDotMap.iceLevels.size());
+                    } catch(NumberFormatException e) {}
+                }
                 x++;
             }
        }
-       dotMap.add(currRow);
+       //parsedDotMap.add(currRow);
+//       for(int i = 0; i<parsedDotMap.size(); i++) {
+//           System.out.println(parsedDotMap.get(i).size());
+//       }
+       return parsedDotMap;
     }
     
 
@@ -215,6 +250,24 @@ public class GameConfiguration {
         return getMatchingNeighbors(daDot,beginningFlavor).size() > 0;
     }
     
+    public HashSet<Dot> getBlockNeighbors(Dot centerDot) {
+        HashSet<Dot>  blockNeighbors = new HashSet<>();    
+        if(centerDot.getX() != 0 && getLeftDot(centerDot).dotFlavor == DotFlavor.BLOCK) {
+            blockNeighbors.add(getLeftDot(centerDot));
+        }
+        if(centerDot.getX() != (getNumCols()-1) && getRightDot(centerDot).dotFlavor == DotFlavor.BLOCK) {
+            blockNeighbors.add(getRightDot(centerDot));
+        }
+        if(centerDot.getY() != 0 && getUpDot(centerDot).dotFlavor == DotFlavor.BLOCK) {
+            blockNeighbors.add(getUpDot(centerDot));
+        }
+        if(centerDot.getY() != (getNumRows()-1) && getDownDot(centerDot).dotFlavor == DotFlavor.BLOCK) {
+            blockNeighbors.add(getDownDot(centerDot));
+        }
+        return blockNeighbors;
+    }
+    
+    
     //dot is already assumed to be colored by this point
     public HashSet<Dot> getMatchingNeighbors(Dot centerDot, DotFlavor beginningFlavor) {
         HashSet<Dot> matchingNeighbors = new HashSet<>();
@@ -248,21 +301,22 @@ public class GameConfiguration {
     public Dot getDownDot(Dot centerDot) {
         return getDot(centerDot.getX(),centerDot.getY()+1);
     }
-        
-    public int drop() {
-        int droppedAnchors = 0;       
+     
+    //all side-effects
+    public void drop(Objective daObjective) {     
         for(int x = 0; x < dotMap.get(0).size();x++) {      
-            droppedAnchors += dropColumn(x);
+            daObjective.droppedAnchors += dropColumn(x);
         }
-        return droppedAnchors;
     }
     
+    //uses side effects to change dot positions
     public int dropColumn(int col) {
         boolean allEmpty = true;
         int droppedAnchors = 0;       
         //work from bottom to top...
+        //System.out.println("dropColumn:" + dotMap.getNumCols() + "," + dotMap.getNumRows());
         for(int y = dotMap.size()-1;y >= 0;) {
-            Dot currDot = this.dotMap.getDot(col,y);                           
+            Dot currDot = this.getDot(col,y);                           
             if(currDot.isEmpty()) {
                 allEmpty = runAndSwap(col,y,currDot);
             }
@@ -289,7 +343,11 @@ public class GameConfiguration {
         //search upwards until a non-empty dot is found 
         for(int runnerY = y;runnerY >= 0;runnerY--) {
             Dot runner = this.dotMap.get(runnerY).get(x);
-            if(!runner.isEmpty() && (runner.dotFlavor != DotFlavor.BLANK)) {
+            if(runner.dotFlavor == DotFlavor.BLOCK) {
+                //(break for-loop)
+                runnerY=-1;
+            }
+            else if(!runner.isEmpty() && (runner.dotFlavor != DotFlavor.BLANK)) {
                 if(!this.isProper()) {
                     System.out.println("IMPROPER (Pre-swap): \n" + this);
                 }
@@ -313,6 +371,7 @@ public class GameConfiguration {
     }
     
     public Dot getDot(int x, int y) {
+        //System.out.println("getting ("+x+","+y+")");
         return dotMap.get(y).get(x);
     } 
 }

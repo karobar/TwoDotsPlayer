@@ -3,4 +3,9 @@
 transporters: ~
 dots: |
   aaaa
-  bbba
+  &&&a
+iceOverlay: |
+  -2--
+  2---
+objectives:
+  - BREAK_ICE

@@ -1,12 +1,20 @@
-## level 140
 ---
 transporters: ~
 dots: |
-  pbpbbby
-  pb---bp
-  gpgpgyb
-  gyywbyb
-  -------
-  gwbygyy
-  ybwwyyg
-  gwgwgwg
+  pygrrppp
+  ryypggpy
+  ggrgrggp
+  -yyyryb-
+  --rbbp--
+  gyyygygr
+  y--pp--p
+  rgpgrggp
+iceOverlay: |
+  -------2
+  2------2
+  --------
+  --------
+  --------
+  --------
+  ----1---
+  1---23--

@@ -11,7 +11,7 @@ public enum DotFlavor {
     CYCLE('*',false),
     
     ANCHOR('a',false),
-    BLOCK('k',false),
+    BLOCK('&',false),
     FIRE('f',false),
     BLANK('-',false),
     EMPTY('_',false),
@@ -54,6 +54,9 @@ public enum DotFlavor {
         }
         else if(dotChar == '-') {
             return BLANK;
+        }
+        else if(dotChar == '&') {
+            return BLOCK;
         }
         else if(dotChar == '_') {
             return EMPTY;

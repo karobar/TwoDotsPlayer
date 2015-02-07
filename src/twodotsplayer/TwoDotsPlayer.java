@@ -22,7 +22,8 @@ public class TwoDotsPlayer {
     }
     
     //Depth-First Search
-    static ScorePackage DFS(GameConfiguration startGameConfig, int currLevel) {     
+    static ScorePackage DFS(GameConfiguration startGameConfig, int currLevel) {
+        //System.out.println("starting DFS: " + startGameConfig.dotMap.iceLevels.size());
         if(PRINT_DFS) { System.out.println(tabs(currLevel) + "Beginning DFS at level:" + currLevel); }
         if(PRINT_DFS) { System.out.println(tabs(currLevel) + "START CONFIG:\n" + startGameConfig.toString(currLevel)); } 
         
@@ -30,18 +31,14 @@ public class TwoDotsPlayer {
         ScorePackage retPackage = new ScorePackage();
         if (currLevel < MAX_LEVEL) {
             HashSet<Move> allMoves = startGameConfig.findAllMovesForAllDots();
-            if(PRINT_DFS) { System.out.println("allmoves="+allMoves); }
+            if(PRINT_DFS) {  System.out.println(tabs(currLevel) + "allmoves="+allMoves); }
             for(Move move : allMoves) {
                 GameConfiguration currConfiguration = new GameConfiguration(startGameConfig.dotMap, startGameConfig.path, move);
-                int removedDots = currConfiguration.remove(move);
-                int droppedAnchors = currConfiguration.drop();           
+                Objective allObjectives = new Objective();
+                currConfiguration.remove(move,allObjectives);
+                currConfiguration.drop(allObjectives);           
                 if(PRINT_DFS) { System.out.println("new configuration (after "+move+"):\n" + currConfiguration.toString(currLevel)); }                
-                if(!currConfiguration.hasAnchors()) {
-                    currConfiguration.score = startGameConfig.score + removedDots; 
-                }
-                else {
-                    currConfiguration.score = startGameConfig.score + droppedAnchors;
-                }
+                currConfiguration.score = startGameConfig.score + allObjectives.getScore();
                 if (currConfiguration.score > retPackage.score) {
                     retPackage.path = currConfiguration.path;
                     retPackage.score = currConfiguration.score;
@@ -57,6 +54,7 @@ public class TwoDotsPlayer {
         return retPackage;
     }
     
+    //Breadth-First-Search
     static void BFS(GameConfiguration startGameConfig) {  
         HashSet<GameConfiguration> unexploredConfigs = new HashSet<>();
         unexploredConfigs.add(startGameConfig);
@@ -71,15 +69,11 @@ public class TwoDotsPlayer {
                 //System.out.println("Size " + startGameConfig.allMoves.size() + ":" + startGameConfig.allMoves); 
                 for(Move move : allMoves) {   
                     GameConfiguration currConfiguration = new GameConfiguration(currUnexGameConfig.dotMap, currUnexGameConfig.path, move);
+                    Objective allObjectives = new Objective();
                     //remove all dots through side-effects
-                    int removedDots = currConfiguration.remove(move);
-                    int droppedAnchors = currConfiguration.drop();           
-                    if(!currConfiguration.hasAnchors()) {
-                        currConfiguration.score = currUnexGameConfig.score + removedDots; 
-                    }
-                    else {
-                        currConfiguration.score = currUnexGameConfig.score + droppedAnchors;
-                    }
+                    currConfiguration.remove(move, allObjectives);
+                    currConfiguration.drop(allObjectives);           
+                    currConfiguration.score = currUnexGameConfig.score + allObjectives.getScore();
                     if (currConfiguration.score > maxScore) {                 
                         maxPath = currConfiguration.path;
                         maxScore = currConfiguration.score;
@@ -105,12 +99,13 @@ public class TwoDotsPlayer {
         constructor.addTypeDescription(gameConfigDesc);
         Yaml yaml = new Yaml(constructor);
         
-        GameConfiguration startGameConfig = (GameConfiguration) yaml.load(new FileInputStream("src/twodotsplayer/gameConfig05.yml"));
+        GameConfiguration startGameConfig = (GameConfiguration) yaml.load(new FileInputStream("src/twodotsplayer/gameConfig06.yml"));
         
         System.out.println("" + startGameConfig.dots);
-        startGameConfig.parse();
+        startGameConfig.dotMap = startGameConfig.parse();
+        //System.out.println(startGameConfig.dotMap.iceLevels.size());
         //in case of a weird initial config, just drop it
-        startGameConfig.drop();
+        startGameConfig.drop(new Objective());
         //BFS(startGameConfig);   
         ScorePackage maxPackage = DFS(startGameConfig,0);
         System.out.println("Best path (Score=" + maxPackage.score + "):" + maxPackage.path);

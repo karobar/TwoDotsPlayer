@@ -2,9 +2,9 @@
 
 Download the JAR [here](http://example.com/)
 
-Run `javac -jar TwoDotsPlayer.jar <path_to_YAML_file> <number_of_levels>`
+Run `java -jar TwoDotsPlayer.jar <path_to_YAML_file> <number_of_levels>`
 
-`path_to_YAML_file` can be a relative or absolute path to a YAML file containing game state information.  Dots can be entered with the following syntax:
+`path_to_YAML_file` can be a relative or absolute path to a YAML file containing game state information.  A sample YAML file can be found [here](http://example.com/). Dots can be entered with the following syntax:
 * **r**=red
 * **b**=blue
 * **p**=purple

@@ -1,6 +1,6 @@
 # TwoDotsPlayer
 
-Download the JAR [an example](http://example.com/ "Title")
+Download the JAR [here](http://example.com/)
 
 Run `javac -jar TwoDotsPlayer.jar <path_to_YAML_file> <number_of_levels>`
 

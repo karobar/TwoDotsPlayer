@@ -9,7 +9,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 public class TwoDotsPlayer {
-    static final int MAX_LEVEL = 4;
+    static int maxLevel = 4;
     
     static final boolean PRINT_DFS = false;
     
@@ -29,7 +29,7 @@ public class TwoDotsPlayer {
         
         ScorePackage currPackage = new ScorePackage();  
         ScorePackage retPackage = new ScorePackage();
-        if (currLevel < MAX_LEVEL) {
+        if (currLevel < maxLevel) {
             HashSet<Move> allMoves = startGameConfig.findAllMovesForAllDots();
             if(PRINT_DFS) {  System.out.println(tabs(currLevel) + "allmoves="+allMoves); }
             for(Move move : allMoves) {
@@ -63,7 +63,7 @@ public class TwoDotsPlayer {
         
         ArrayList<Move> maxPath = new ArrayList<>();
         int maxScore = 0;
-        while(!unexploredConfigs.isEmpty() && level < MAX_LEVEL) {
+        while(!unexploredConfigs.isEmpty() && level < maxLevel) {
             for(GameConfiguration currUnexGameConfig : unexploredConfigs) {
                 HashSet<Move> allMoves = currUnexGameConfig.findAllMovesForAllDots();
                 //System.out.println("Size " + startGameConfig.allMoves.size() + ":" + startGameConfig.allMoves); 
@@ -91,6 +91,11 @@ public class TwoDotsPlayer {
     } 
     
     public static void main(String[] args) throws FileNotFoundException, CloneNotSupportedException {
+        System.out.println("Finding best move for the following input:" + args.length);
+        if(args.length > 1) {
+            maxLevel = Integer.parseInt(args[1]);
+        }
+        
         Constructor constructor = new Constructor(GameConfiguration.class);
         TypeDescription gameConfigDesc = new TypeDescription(GameConfiguration.class);
         
@@ -98,8 +103,8 @@ public class TwoDotsPlayer {
         
         constructor.addTypeDescription(gameConfigDesc);
         Yaml yaml = new Yaml(constructor);
-        
-        GameConfiguration startGameConfig = (GameConfiguration) yaml.load(new FileInputStream("src/twodotsplayer/gameConfig06.yml"));
+        //previously "src/twodotsplayer/gameConfig06.yml"
+        GameConfiguration startGameConfig = (GameConfiguration) yaml.load(new FileInputStream(args[0]));
         
         System.out.println("" + startGameConfig.dots);
         startGameConfig.dotMap = startGameConfig.parse();

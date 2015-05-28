@@ -23,7 +23,7 @@ public class Dot {
     public String toString() {
         String xString = x + "";
         String yString = y + "";
-        return dotFlavor.toChar() + xString + yString;
+        return dotFlavor.toChar() + ":(" + xString + "," + yString + ")";
     }
     
     public boolean isEmpty() {
